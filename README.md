@@ -78,6 +78,15 @@ Some skills reference user-specific paths (notably `crm` expects a `~/personal-o
 - **og-image** — generate Open Graph social preview images matching the project's design system.
 - **unified-dev-env** — pattern where all services, logs, and browser console stream into one observable place.
 
+## Related tools (not authored by me)
+
+Skills and tools I use alongside this collection but didn't write — credit goes to their upstream maintainers:
+
+- **[agent-browser](https://github.com/vercel-labs/agent-browser)** by Vercel Labs — browser automation CLI for AI agents over CDP. Ships its own Claude Code skill.
+- **[browser-harness](https://github.com/browser-use/browser-harness)** by Browser Use — direct browser control via CDP, designed for parallel sub-agents and remote browsers.
+- **[anthropics/skills](https://github.com/anthropics/skills)** — Anthropic's official skill collection. I use `skill-creator` and `frontend-design` from there.
+- **[Anthropic Superpowers plugin](https://github.com/anthropics/claude-code)** — the `superpowers:*` skill suite (brainstorming, TDD, debugging, plan execution, etc.) shipped via Claude Code plugins.
+
 ## License
 
 [MIT](LICENSE).
