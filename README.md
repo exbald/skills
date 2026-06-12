@@ -1,6 +1,6 @@
 # skills
 
-A collection of **41 Claude Code skills** covering marketing, copywriting, SEO, engineering patterns, Claude Code tooling, and decision-making workflows. Each skill is a self-contained `SKILL.md` (plus optional references and scripts) that extends Claude with specialized knowledge or process. Drop them into `~/.claude/skills/` and Claude will activate the right one automatically based on your request.
+A collection of **42 Claude Code skills** covering marketing, copywriting, SEO, engineering patterns, Claude Code tooling, and decision-making workflows. Each skill is a self-contained `SKILL.md` (plus optional references and scripts) that extends Claude with specialized knowledge or process. Drop them into `~/.claude/skills/` and Claude will activate the right one automatically based on your request.
 
 ## Install
 
@@ -65,6 +65,7 @@ Some skills reference user-specific paths (notably `crm` expects a `~/personal-o
 - **agent-development** — author Claude Code subagents — frontmatter, descriptions, tools, examples.
 - **command-development** — author slash commands — frontmatter, arguments, dynamic execution.
 - **create-spec** — generate feature specs optimized for parallel agent execution and wave planning.
+- **codemaps** — deterministic, auto-updating repo map (routes, API, data model with FK edges, components, env, specs) that agents read first as grounded truth; ships a Next.js+Drizzle reference generator, cross-stack scanner recipes, and a Stop-hook auto-refresh.
 - **mcp-integration** — integrate MCP servers (SSE, stdio, HTTP, WebSocket) into Claude Code plugins.
 - **claude-opus-4-5-migration** — migrate prompts and code from older Claude models to Opus 4.5.
 
