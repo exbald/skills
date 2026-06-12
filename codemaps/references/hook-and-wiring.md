@@ -104,17 +104,28 @@ machine-derived — never hand-edit them; fix `scripts/codemaps/generate.ts` ins
 <a name="pointer"></a>
 ## 4. Agent pointer (AGENTS.md / CLAUDE.md)
 
-Add a short section near the top of `AGENTS.md` (or `CLAUDE.md`) so agents read the map first:
+Add a short section near the top of `AGENTS.md` (or `CLAUDE.md`) so agents read the map first —
+**and include the header-freshness rule**, which is what keeps `flows.md` true:
 
 ```markdown
 ## REPO MAP — grounded structure
 
 For a machine-derived map of the codebase, read **`docs/codemaps/architecture.md`** first — it
-links `frontend.md`, `backend.md`, and `data.md`. For the "why", read
-**`docs/codemaps/flows.md`**. The four structural files are auto-generated ground truth — never
-hand-edit them (run `pnpm codemaps`); fix the generator if one is wrong. Only `flows.md` is
-hand-written.
+links `frontend.md`, `backend.md`, and `data.md`. For the "why", read **`docs/codemaps/flows.md`**.
+All five files are auto-generated ground truth — never hand-edit them (run `pnpm codemaps`). If a
+structural file is wrong, fix the generator; if a "why" is wrong or missing, fix the **JSDoc
+header in that source file**.
+
+### Header-freshness rule (keeps flows.md true)
+`flows.md` quotes each flow module's top-of-file JSDoc header verbatim. So:
+- When you **change a module's behavior**, update its `/** ... */` header in the same edit.
+- When you **add a significant module** under the scanned dirs, give it a real header (≥4 lines).
+The header sits next to the code you're editing — keeping it current is part of the change.
 ```
+
+This rule is load-bearing: without it, headers drift and `flows.md` quotes stale (but never
+fabricated) descriptions. With it, the coding agent maintains the "why" as a side effect of
+normal edits — which is what makes the system work under vibe-coding.
 
 <a name="gitignore"></a>
 ## 5. .gitignore

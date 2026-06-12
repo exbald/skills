@@ -12,6 +12,7 @@ turns them into token-lean markdown tables.
 - [Server actions](#actions)
 - [DB schema (the high-value, high-fragility one)](#schema)
 - [Components / lib modules](#modules)
+- [Flows — the "why", auto-derived from JSDoc](#flows)
 - [Env vars](#env)
 - [Specs / migrations / integrations](#misc)
 - [Non-TypeScript-loader projects (plain node + regex)](#plain-node)
@@ -27,9 +28,11 @@ turns them into token-lean markdown tables.
 3. **Schema scan is fail-safe** — wrap it in try/catch. On failure (broken TS mid-edit, parse
    error), LEAVE `data.md` untouched rather than emit an empty/wrong map. A half-saved edit
    must never corrupt "the brain."
-4. **One hand-written file** — `docs/codemaps/flows.md` is authored by humans/agents and is
-   NEVER written by the generator. Everything else is pure auto.
-5. **Token-lean** — tables and counts, never code dumps or prose in the auto files.
+4. **`flows.md` is auto-derived, not hand-written** — it quotes each flow module's top-of-file
+   JSDoc header verbatim (see [Flows](#flows)). Grounded: a stale header yields a stale quote,
+   never an invented one. Nothing in `docs/codemaps/` is hand-authored.
+5. **Token-lean** — tables and counts, never code dumps or prose (except `flows.md`, which *is*
+   the quoted prose, scoped by header-length + `FLOW_EXCLUDE`).
 
 <a name="routes"></a>
 ## Routes / pages
@@ -99,6 +102,38 @@ defensively and prefer reading a generated schema dump if one exists.
 Group top-level dirs under `src/components` and `src/lib`, with file counts. For single-file
 lib modules, pull a one-line note from a **real JSDoc `/** */` header** only (first ~400 chars)
 — never a stray `//` section comment, which reads as a misleading description.
+
+<a name="flows"></a>
+## Flows — the "why", auto-derived from JSDoc
+
+A filesystem scan gives *shape* but not *intent* (why revenue uses `COALESCE(ship_date,
+scheduled_ship_date)`, why a parent distributor is re-attributed by region). That intent already
+lives in the codebase as **top-of-file JSDoc headers** — and crucially, the **coding agent**
+writes and updates them next to the code (so it survives "I never write comments" / vibe-coding).
+`flows.md` is built by quoting those headers verbatim.
+
+How it works (`collectFlows` + `renderFlows` in the template):
+- Walk a set of flow dirs (`src/lib`, `src/app/api`). For each `.ts`/`.tsx`, extract the **first
+  `/** … */` block** if it sits near the top of the file (within ~1500 chars → a file header, not
+  a function doc). Strip `*` prefixes and `@tags`.
+- Include only **substantial** headers (≥4 non-empty lines) so utility one-liners don't flood it.
+- First line → section title; the rest → body, quoted as-is.
+- **`FLOW_EXCLUDE`** (regex) drops scoped scratch/discovery areas whose headers are real but
+  aren't live flows (probes, fixtures, `*.test`, `__mocks__`, generated). Tune per repo — this is
+  the main knob for signal-vs-noise.
+
+Why auto-derive beats the two alternatives:
+- vs **hand-written `flows.md`**: a hand file that nobody maintains rots into confidently-wrong
+  docs — worse than nothing. Auto-derive needs zero hand-maintenance.
+- vs **LLM-generated narrative**: an LLM *generates* fresh prose and can fabricate/drift; quoting
+  *copies* prose a human/agent already wrote and can only ever be as wrong as the source comment
+  (a visible, code-reviewed artifact). Auto-derive preserves the "can't hallucinate" guarantee.
+
+The one dependency: headers must stay accurate. Enforce with an **AGENTS.md header-freshness
+rule** (see `hook-and-wiring.md`): when you change a module's behavior, update its header in the
+same edit. The header is co-located with the code, so this is low-friction. If a repo genuinely
+has no headers and won't grow them, **drop `flows.md`** — agents read the structural maps + open
+source for the "why" — rather than ship an empty or LLM-faked one.
 
 <a name="env"></a>
 ## Env vars

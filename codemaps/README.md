@@ -6,8 +6,8 @@ Set up a deterministic, auto-updating map of a whole repo — routes, API, data 
 
 This skill builds a project-tailored codemaps system in any repo:
 
-- **Deterministic generator** — scans the real files (no LLM, no network) and renders structural maps that *cannot* hallucinate.
-- **`docs/codemaps/`** output — `architecture.md` (entry point), `frontend.md`, `backend.md`, `data.md` (all auto-generated), plus a single hand-written `flows.md` for the "why".
+- **Deterministic generator** — scans the real files (no LLM, no network) and renders maps that *cannot* hallucinate.
+- **`docs/codemaps/`** output — `architecture.md` (entry point), `frontend.md`, `backend.md`, `data.md`, and `flows.md` — **all auto-generated**. `flows.md` (the "why") is built by quoting each flow module's top-of-file JSDoc header verbatim; a small `AGENTS.md` header-freshness rule keeps those current (the coding agent writes the headers, so it survives vibe-coding).
 - **Stop hook** — regenerates the map once per turn when source changes (async, change-gated, idempotent → no git churn).
 - **Agent wiring** — `/update-codemaps` command, an `AGENTS.md`/`CLAUDE.md` pointer, and `.gitignore` entry.
 
@@ -17,7 +17,7 @@ Works on any stack: a complete Next.js App Router + Drizzle reference generator 
 
 ### SKILL.md
 
-The 6-step workflow (inventory the repo → build the generator → verify against reality → seed `flows.md` → wire the hook → final verification) plus the non-negotiable invariants that keep the map grounded and idempotent.
+The 6-step workflow (inventory the repo → build the generator → verify against reality → check `flows.md` + the header convention → wire the hook → final verification) plus the non-negotiable invariants that keep the map grounded and idempotent.
 
 ### assets/
 
