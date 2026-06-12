@@ -1,6 +1,6 @@
 # skills
 
-A collection of **42 Claude Code skills** covering marketing, copywriting, SEO, engineering patterns, Claude Code tooling, and decision-making workflows. Each skill is a self-contained `SKILL.md` (plus optional references and scripts) that extends Claude with specialized knowledge or process. Drop them into `~/.claude/skills/` and Claude will activate the right one automatically based on your request.
+A collection of **43 Claude Code skills** covering marketing, copywriting, SEO, engineering patterns, Claude Code tooling, and decision-making workflows. Each skill is a self-contained `SKILL.md` (plus optional references and scripts) that extends Claude with specialized knowledge or process. Drop them into `~/.claude/skills/` and Claude will activate the right one automatically based on your request.
 
 ## Install
 
@@ -39,6 +39,7 @@ Some skills reference user-specific paths (notably `crm` expects a `~/personal-o
 ### Copy & Content
 - **copy-editing** — systematic editing of existing marketing copy across multiple passes.
 - **copywriting** — write or rewrite marketing copy for homepage, landing, pricing, feature pages.
+- **email-reply** — draft replies to pasted emails in your own voice — concise, plain-English, lightly mirroring the sender. Learns your style from real sent emails on first run.
 - **email-sequence** — drip campaigns, onboarding emails, lifecycle automations, re-engagement.
 - **social-content** — LinkedIn posts, X threads, Instagram, TikTok — content creation and repurposing.
 
