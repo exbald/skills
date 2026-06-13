@@ -56,6 +56,7 @@ Some skills reference user-specific paths (notably `crm` expects a `~/personal-o
 
 ### Engineering Patterns
 - **backend-patterns** — Node.js / Express / Next.js API design, database, and server patterns.
+- **coolify-vps** — manage a self-hosted Coolify instance via its REST API — apps, services, databases, env vars, deployments, scheduled tasks.
 - **frontend-patterns** — React / Next.js patterns, state management, performance, UI best practices.
 - **postgres-patterns** — query optimization, schema design, indexing, RLS, based on Supabase practices.
 - **security-review** — security checklists and patterns for auth, input handling, secrets, APIs, payments.
