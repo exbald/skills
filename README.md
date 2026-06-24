@@ -1,6 +1,6 @@
 # skills
 
-A collection of **43 Claude Code skills** covering marketing, copywriting, SEO, engineering patterns, Claude Code tooling, and decision-making workflows. Each skill is a self-contained `SKILL.md` (plus optional references and scripts) that extends Claude with specialized knowledge or process. Drop them into `~/.claude/skills/` and Claude will activate the right one automatically based on your request.
+A collection of **45 Claude Code skills** covering marketing, copywriting, SEO, engineering patterns, Claude Code tooling, and decision-making workflows. Each skill is a self-contained `SKILL.md` (plus optional references and scripts) that extends Claude with specialized knowledge or process. Drop them into `~/.claude/skills/` and Claude will activate the right one automatically based on your request.
 
 ## Install
 
@@ -59,6 +59,7 @@ Some skills reference user-specific paths (notably `crm` expects a `~/personal-o
 - **coolify-vps** — manage a self-hosted Coolify instance via its REST API — apps, services, databases, env vars, deployments, scheduled tasks.
 - **frontend-patterns** — React / Next.js patterns, state management, performance, UI best practices.
 - **postgres-patterns** — query optimization, schema design, indexing, RLS, based on Supabase practices.
+- **qa-deliverables** — produce client-facing QA deliverables by driving a live web app with browser-harness — a screenshotted, power-user test report and a plain-English runbook, then polished PDFs of both.
 - **security-review** — security checklists and patterns for auth, input handling, secrets, APIs, payments.
 - **stripe-best-practices** — Stripe integration patterns — checkout, subscriptions, webhooks, Connect.
 - **tdd-workflow** — enforce test-driven development with 80%+ coverage across unit, integration, E2E.
