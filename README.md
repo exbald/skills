@@ -1,6 +1,6 @@
 # skills
 
-A collection of **45 Claude Code skills** covering marketing, copywriting, SEO, engineering patterns, Claude Code tooling, and decision-making workflows. Each skill is a self-contained `SKILL.md` (plus optional references and scripts) that extends Claude with specialized knowledge or process. Drop them into `~/.claude/skills/` and Claude will activate the right one automatically based on your request.
+A collection of **46 Claude Code skills** covering marketing, copywriting, SEO, engineering patterns, Claude Code tooling, and decision-making workflows. Each skill is a self-contained `SKILL.md` (plus optional references and scripts) that extends Claude with specialized knowledge or process. Drop them into `~/.claude/skills/` and Claude will activate the right one automatically based on your request.
 
 ## Install
 
@@ -58,6 +58,7 @@ Some skills reference user-specific paths (notably `crm` expects a `~/personal-o
 - **backend-patterns** — Node.js / Express / Next.js API design, database, and server patterns.
 - **coolify-vps** — manage a self-hosted Coolify instance via its REST API — apps, services, databases, env vars, deployments, scheduled tasks.
 - **frontend-patterns** — React / Next.js patterns, state management, performance, UI best practices.
+- **page-agent** — drive a running web app with natural-language tasks via Alibaba's page-agent (extension page-API + a one-shot browser-harness injection, no MCP); acts on the DOM, pair with a vision pass to see. Ships a `pa` CLI.
 - **postgres-patterns** — query optimization, schema design, indexing, RLS, based on Supabase practices.
 - **qa-deliverables** — produce client-facing QA deliverables by driving a live web app with browser-harness — a screenshotted, power-user test report and a plain-English runbook, then polished PDFs of both.
 - **security-review** — security checklists and patterns for auth, input handling, secrets, APIs, payments.
@@ -88,6 +89,7 @@ Skills and tools I use alongside this collection but didn't write — credit goe
 
 - **[agent-browser](https://github.com/vercel-labs/agent-browser)** by Vercel Labs — browser automation CLI for AI agents over CDP. Ships its own Claude Code skill.
 - **[browser-harness](https://github.com/browser-use/browser-harness)** by Browser Use — direct browser control via CDP, designed for parallel sub-agents and remote browsers.
+- **[page-agent](https://github.com/alibaba/page-agent)** by Alibaba — the in-page GUI agent that the `page-agent` skill drives; text-based DOM automation, bring-your-own-LLM. (The skill is mine; the tool is theirs.)
 - **[anthropics/skills](https://github.com/anthropics/skills)** — Anthropic's official skill collection. I use `skill-creator` and `frontend-design` from there.
 - **[Anthropic Superpowers plugin](https://github.com/anthropics/claude-code)** — the `superpowers:*` skill suite (brainstorming, TDD, debugging, plan execution, etc.) shipped via Claude Code plugins.
 

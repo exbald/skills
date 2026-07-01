@@ -1,0 +1,29 @@
+#!/usr/bin/env bash
+# pa — run a natural-language task on a web page via page-agent (extension page-API, no MCP).
+#
+# Usage:   pa "<task>" [url] [model]
+# Env:     PA_URL, PA_MODEL, PA_MAXPOLL, PA_INITIAL=0 (driver-tab: don't act on the initial tab)
+# Config:  ~/.config/page-agent/{config.json,key,pa_run.py}   (key is chmod 600)
+# Needs:   browser-harness on PATH + your extension-Chrome running on :9222 (same profile as the token).
+#
+# Examples:
+#   pa "Type 'banana' into the search box; do not press Enter" https://en.wikipedia.org
+#   pa "Log in as test@x.com / hunter2 and open Settings" http://localhost:3000 glm-5.2
+#   PA_INITIAL=0 pa "In a new tab, sign up on my app and report the final screen" http://localhost:3000
+set -euo pipefail
+
+CFG="$HOME/.config/page-agent"
+PY="$CFG/pa_run.py"
+[ -f "$CFG/key" ]        || { echo "pa: missing $CFG/key (see the skill's SKILL.md setup)" >&2; exit 1; }
+[ -f "$CFG/config.json" ]|| { echo "pa: missing $CFG/config.json" >&2; exit 1; }
+[ -f "$PY" ]             || { echo "pa: missing $PY" >&2; exit 1; }
+command -v browser-harness >/dev/null || { echo "pa: browser-harness not on PATH" >&2; exit 1; }
+
+TASK="${1:-}"
+[ -n "$TASK" ] || { echo 'usage: pa "<task>" [url] [model]' >&2; exit 2; }
+
+export PA_TASK="$TASK"
+[ "${2:-}" ] && export PA_URL="$2"
+[ "${3:-}" ] && export PA_MODEL="$3"
+
+exec browser-harness -c "$(< "$PY")"
