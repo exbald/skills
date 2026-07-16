@@ -1,6 +1,6 @@
 # skills
 
-A collection of **46 Claude Code skills** covering marketing, copywriting, SEO, engineering patterns, Claude Code tooling, and decision-making workflows. Each skill is a self-contained `SKILL.md` (plus optional references and scripts) that extends Claude with specialized knowledge or process. Drop them into `~/.claude/skills/` and Claude will activate the right one automatically based on your request.
+A collection of **47 Claude Code skills** covering marketing, copywriting, SEO, engineering patterns, Claude Code tooling, and decision-making workflows. Each skill is a self-contained `SKILL.md` (plus optional references and scripts) that extends Claude with specialized knowledge or process. Drop them into `~/.claude/skills/` and Claude will activate the right one automatically based on your request.
 
 ## Install
 
@@ -33,6 +33,7 @@ Some skills reference user-specific paths (notably `crm` expects a `~/personal-o
 ### SEO & Discovery
 - **competitor-alternatives** — competitor comparison pages, "vs" pages, alternative pages for SEO and sales.
 - **programmatic-seo** — build SEO pages at scale from templates and data.
+- **indexnow** — set up IndexNow (key file, submit script, CI auto-trigger) and ping Bing/Yandex/etc. about added, updated, or deleted pages.
 - **schema-markup** — JSON-LD structured data, rich snippets, FAQ/product/review schema.
 - **seo-audit** — diagnose technical and on-page SEO issues.
 
