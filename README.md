@@ -1,6 +1,6 @@
 # skills
 
-A collection of **47 Claude Code skills** covering marketing, copywriting, SEO, engineering patterns, Claude Code tooling, and decision-making workflows. Each skill is a self-contained `SKILL.md` (plus optional references and scripts) that extends Claude with specialized knowledge or process. Drop them into `~/.claude/skills/` and Claude will activate the right one automatically based on your request.
+A collection of **48 Claude Code skills** covering marketing, copywriting, SEO, engineering patterns, Claude Code tooling, and decision-making workflows. Each skill is a self-contained `SKILL.md` (plus optional references and scripts) that extends Claude with specialized knowledge or process. Drop them into `~/.claude/skills/` and Claude will activate the right one automatically based on your request.
 
 ## Install
 
@@ -16,6 +16,8 @@ Then either:
 - **Pick individual skills:** `ln -s ~/.claude/skills-exbald/copywriting ~/.claude/skills/copywriting`
 
 Some skills reference user-specific paths (notably `crm` expects a `~/personal-os/CRM/` directory). Adapt those to your own setup.
+
+Most skills auto-activate from your request. `concise` is the exception — it sets `disable-model-invocation: true`, so it does nothing until you type `/concise`.
 
 ## Skills
 
@@ -75,6 +77,7 @@ Some skills reference user-specific paths (notably `crm` expects a `~/personal-o
 - **claude-opus-4-5-migration** — migrate prompts and code from older Claude models to Opus 4.5.
 
 ### Workflows & Learning
+- **concise** — output style that shapes replies for action: next action first, numbered steps, state restated every turn, no preamble or closers. Explicit-invoke only (`/concise`), stays on until "stop concise mode". Adapted from [i-have-adhd](https://github.com/ayghri/i-have-adhd) (MIT) — see `concise/ATTRIBUTION.md`.
 - **continuous-learning-v2** — instinct-based learning that observes sessions and evolves skills/commands/agents.
 - **profile-learner** — auto-detect and save personal facts about the user during conversations.
 - **strategic-compact** — suggest manual `/compact` at logical task boundaries instead of arbitrary auto-compaction.
@@ -91,6 +94,7 @@ Skills and tools I use alongside this collection but didn't write — credit goe
 - **[agent-browser](https://github.com/vercel-labs/agent-browser)** by Vercel Labs — browser automation CLI for AI agents over CDP. Ships its own Claude Code skill.
 - **[browser-harness](https://github.com/browser-use/browser-harness)** by Browser Use — direct browser control via CDP, designed for parallel sub-agents and remote browsers.
 - **[page-agent](https://github.com/alibaba/page-agent)** by Alibaba — the in-page GUI agent that the `page-agent` skill drives; text-based DOM automation, bring-your-own-LLM. (The skill is mine; the tool is theirs.)
+- **[i-have-adhd](https://github.com/ayghri/i-have-adhd)** by Ayoub Ghriss — the upstream output-style skill that `concise` is a renamed, reframed derivative of. Rules are his; redistributed here under MIT with the original notice in `concise/ATTRIBUTION.md`.
 - **[anthropics/skills](https://github.com/anthropics/skills)** — Anthropic's official skill collection. I use `skill-creator` and `frontend-design` from there.
 - **[Anthropic Superpowers plugin](https://github.com/anthropics/claude-code)** — the `superpowers:*` skill suite (brainstorming, TDD, debugging, plan execution, etc.) shipped via Claude Code plugins.
 
