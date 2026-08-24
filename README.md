@@ -1,6 +1,6 @@
 # skills
 
-A collection of **48 Claude Code skills** covering marketing, copywriting, SEO, engineering patterns, Claude Code tooling, and decision-making workflows. Each skill is a self-contained `SKILL.md` (plus optional references and scripts) that extends Claude with specialized knowledge or process. Drop them into `~/.claude/skills/` and Claude will activate the right one automatically based on your request.
+A collection of **49 Claude Code skills** covering marketing, copywriting, SEO, engineering patterns, Claude Code tooling, and decision-making workflows. Each skill is a self-contained `SKILL.md` (plus optional references and scripts) that extends Claude with specialized knowledge or process. Drop them into `~/.claude/skills/` and Claude will activate the right one automatically based on your request.
 
 ## Install
 
@@ -56,6 +56,7 @@ Most skills auto-activate from your request. `concise` is the exception — it s
 
 ### Sales & CRM
 - **crm** — display CRM pipeline with contacts, deals, and weekly follow-up actions. (Expects `~/personal-os/CRM/`.)
+- **upwork-listings** — create and edit Upwork Project Catalog listings and consultations by driving the wizard with browser-harness; carries the pricing ladder that actually sells plus every platform trap (trusted-gesture file dialogs, the Cropper.js crop fix, field limits).
 
 ### Engineering Patterns
 - **backend-patterns** — Node.js / Express / Next.js API design, database, and server patterns.

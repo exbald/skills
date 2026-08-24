@@ -1,0 +1,49 @@
+{
+ "_comment": "Example config for scripts/build_project.py. Fictional listing, shown to illustrate structure. Validate every length before running: title 75 chars and min 7 words, tier title 30, tier description 80, summary 1200 min 120, requirement 250 min 10, step description 250, FAQ answer 250, max 5 tags, max 5 FAQs.",
+
+ "title": "a data migration from your old system into your new platform",
+
+ "cat": ["Development & IT", "Web Programming", "Web Application Programming"],
+ "langs": ["Python", "JavaScript", "TypeScript"],
+ "expertise": ["Performance Optimization", "Security", "Design"],
+ "tags": ["data migration", "etl", "database", "integration", "api"],
+
+ "tiers": {
+  "titles": ["Single Source", "Multi Source", "Full Migration"],
+  "descs": [
+   "One source migrated, field mapping documented, verified row counts.",
+   "Multiple sources, transformation rules, and a reconciliation report.",
+   "Adds historical backfill, a rollback plan, and a cutover rehearsal."
+  ],
+  "days": ["5", "10", "21"],
+  "revisions": [1, 2, 3],
+  "prices": ["149", "600", "1500"]
+ },
+
+ "image": "/absolute/path/to/gallery/your-image.png",
+
+ "reqs": [
+  "What system you are migrating from, and what you are migrating to.",
+  "Roughly how many records, and how far back the history goes.",
+  "A sample export, or read access to the source system.",
+  "Any fields that must not change, and anything safe to drop.",
+  "Whether the old system stays running during the migration."
+ ],
+
+ "summary": "Migrations go wrong quietly. The row counts match, the reports look right, and six weeks later somebody notices that every record from one year lost its timestamps.\n\nSo this is built around verification rather than speed.\n\nYou get the data moved, a written field mapping showing exactly what became what, reconciliation counts you can check yourself, and a list of everything that could not be mapped cleanly with a recommendation for each.\n\nHonest note. If your source data has structural problems, a migration will carry them across rather than fix them. I will tell you what I find before we start, and what it would cost to clean up separately, rather than quietly moving the mess.",
+
+ "steps": [
+  ["Review the source", "You share a sample export or read access, and I map what is actually there."],
+  ["Agree the mapping", "We confirm the field mapping and what happens to anything that will not map."],
+  ["Migrate and verify", "I run the migration and produce reconciliation counts against the source."],
+  ["Hand over", "You get the mapping document, the reconciliation report, and the scripts."]
+ ],
+
+ "faqs": [
+  ["Will the old system keep working during the migration?", "Yes. Nothing is deleted at the source. The migration copies data, so you can run both in parallel until you are satisfied."],
+  ["What if some records will not map cleanly?", "You get a list of every one, with a recommendation. Nothing is silently dropped or guessed at."],
+  ["Can you migrate custom fields?", "Usually yes. Custom fields are the most common reason a migration needs the larger tier, because each one needs a mapping decision."],
+  ["Do you keep a copy of our data?", "No. Everything runs in your own environment, and I delete any working copies at handover."],
+  ["What happens if something goes wrong after cutover?", "The Full Migration tier includes a rollback plan and a rehearsal. The source data is untouched, so reverting is always possible."]
+ ]
+}
