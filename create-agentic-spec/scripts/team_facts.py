@@ -9,17 +9,22 @@
 
 Quota comes from `orca account list --json` (result.rateLimits). Verdicts:
 EXHAUSTED (>= 90% and no reset before the run ends), low (>= 70%), ok, unknown.
+It first prints the age of references/roster.md (its `roster_as_of:` line);
+over 14 days old is STALE.
 """
 
 import argparse
 import datetime
 import json
 import os
+import re
 import subprocess
 import sys
 
 BLOCK_PCT = 90
 LOW_PCT = 70
+ROSTER_TTL_DAYS = 14
+ROSTER = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "references", "roster.md")
 UNTRACKED = ["opencode", "opencode2", "muse"]
 BUCKET_HINTS = {
     ("cursor", "Cursor Models"): "Cursor Models = composer-* and auto in cursor",
@@ -104,6 +109,23 @@ def print_quota(limits, now_ms, hours):
         print(f"  note: {hint}")
 
 
+def print_roster_age(path, now_ms):
+    try:
+        with open(path, encoding="utf-8") as f:
+            match = re.search(r"^roster_as_of:\s*(\d{4}-\d{2}-\d{2})\s*$", f.read(), re.M)
+    except OSError as exc:
+        print(f"ROSTER unreadable ({exc}); treat the routing data as stale")
+        return
+    if not match:
+        print("ROSTER has no roster_as_of date; treat the routing data as stale")
+        return
+    as_of = datetime.datetime.fromisoformat(match.group(1)).replace(tzinfo=datetime.timezone.utc)
+    age = int((now_ms - as_of.timestamp() * 1000) // (86400 * 1000))
+    state = "ok" if age <= ROSTER_TTL_DAYS else (
+        f"STALE (over {ROSTER_TTL_DAYS} days): refresh references/roster.md or get the user's OK to use it as is")
+    print(f"ROSTER as of {match.group(1)} ({age} days old): {state}")
+
+
 def print_models(probe):
     print("MODELS")
     try:
@@ -136,8 +158,10 @@ def main():
     parser.add_argument("--probe-clis", action="store_true")
     parser.add_argument("--accounts-json", help=argparse.SUPPRESS)
     parser.add_argument("--now-ms", type=int, help=argparse.SUPPRESS)
+    parser.add_argument("--roster", default=ROSTER, help=argparse.SUPPRESS)
     args = parser.parse_args()
     now_ms = args.now_ms or int(datetime.datetime.now().timestamp() * 1000)
+    print_roster_age(args.roster, now_ms)
     print_quota(load_accounts(args.accounts_json), now_ms, args.hours)
     if not args.no_models:
         print_models(args.probe_clis)

@@ -29,14 +29,14 @@ You are the PM and the coordinator. Workers on the models best suited to each jo
 ## Workflow
 
 1. **Ground.** Read the code the feature touches and note file:line evidence. Ask the user only for decisions no agent may invent; record each in `requirements.md`.
-2. **Pick the team.** Run `python3 scripts/team_facts.py --hours <expected run length>`, then follow `references/roster.md`. Write `team.md`.
+2. **Pick the team.** Run `python3 scripts/team_facts.py --hours <expected run length>`, then follow `references/roster.md`. Write `team.md`. If the script reports the roster STALE, refresh the roster or get the user's explicit OK to use it as is.
 3. **Write the spec** in `specs/<feature>/` from `references/templates.md`. Then:
    - `python3 scripts/spec_guard.py lint specs/<feature>` must report 0 errors.
    - Run the spec critic (`references/run-loop.md`, Spec critique) and fix every finding.
    - Commit the spec to the feature branch. Child worktrees only see committed files, and the spec plus `run-state.md` is the state a new coordinator resumes from.
 4. **Confirm.** Show the user `team.md` and the wave table. Launch on their go, unless they already asked you to run it.
-5. **Run** wave by wave with `references/run-loop.md`; after every push, `references/review-loop.md`.
-6. **Report** per task: outcome, evidence, merge commit. Then the bot status and anything open. Never merge the PR: the merge belongs to the human.
+5. **Run** wave by wave with `references/run-loop.md`, starting with its "Known Orca sharp edges". With the bot on, run `references/review-loop.md` after every push.
+6. **Report** per task: outcome, evidence, merge commit. Then the bot status and anything open. Never merge the PR: the merge belongs to the human. With the bot off, you open no PR; the user does.
 
 ## Team rules
 
@@ -44,6 +44,7 @@ You are the PM and the coordinator. Workers on the models best suited to each jo
 - The reviewer and QA come from a different model family than every coder whose work they check. Pick the reviewer first and route coders around its family. The GitHub bot does not count towards this: it can be quota-blocked, slow or down.
 - PM work (decomposition, judgement calls, acceptance) stays with you. Never hand it to a worker, least of all a weaker model.
 - Task files never name a model. Routing lives in `team.md`, keyed by tier, so a task can be rerouted without rewriting it.
+- Record in `team.md` whether the GitHub review bot is on. Off means no PR and no bot loop, never fewer internal checks.
 
 ## Spec rules: write for the weakest agent on the roster
 
@@ -52,14 +53,14 @@ You are the PM and the coordinator. Workers on the models best suited to each jo
 - A contract two tasks share (types, function names, routes, columns, error codes, env vars) is written verbatim in the spec, or built by a task in an earlier wave. Never "task A writes it first and task B waits for it".
 - Shared and generated files (schema, migrations, manifests and lockfiles, barrel or registry files, i18n catalogs) belong to exactly one task per wave.
 - Verification is literal commands with expected results: typecheck, lint, and the unit tests for the task's own files.
-- Shared runtime (dev-server port, test database, the e2e suite) is used only by you and QA, after a merge. Coders never start it.
+- Shared runtime (dev-server port, test database, the e2e suite) is used only by you and QA, after a merge, and coders never start it. The exception is a repo whose Orca setup scripts give each worktree its own database and port; that isolation belongs in a companion env-isolation setup, not in this skill.
 
 ## Run rules
 
-1. Every coder starts with `--worktree new-child`. Read-only workers use `--worktree current`, and only while no coder edits it.
+1. Every coder gets its own child worktree, which you create and base-check before its agent starts (`run-loop.md` 2a). Orca's `--worktree new-child` currently branches from the wrong base. Read-only workers use `--worktree current`, and only while no coder edits it.
 2. Workers never push, merge, rebase or `git add -A`. You are the only integrator.
 3. A `worker_done` is a claim. Accept it only after `spec_guard.py diff` passes and you have rerun every Verification command in the child worktree yourself. Write both results into `run-state.md`.
-4. After a wave merges: full gates on the merged branch, then the reviewer, then fix tasks for P1/P2 findings, then push. The bot's review of that exact HEAD must be clean before the next wave starts.
+4. After a wave merges: full gates on the merged branch, then the reviewer, then fix tasks for P1/P2 findings, then push. With the bot on, its review of that exact HEAD must be clean before the next wave starts.
 5. After two failed attempts at a task, move it up a tier or fix the spec. Orca fails a task after its third failed attempt; never route around that.
 
 ## Red flags: stop and correct course
@@ -74,11 +75,13 @@ You are the PM and the coordinator. Workers on the models best suited to each jo
 | "Task B can poll for task A's file" | That is a race between live workers. Freeze the contract in the spec or an earlier wave. |
 | "A cheap model can make the judgement calls while I coordinate" | Judgement is PM work, and it stays with you. |
 | "The user wants it running in 15 minutes, so skip the critic, review or verification" | Speed comes from running workers in parallel, not from removing gates. |
+| "The bot is off, so the internal review can go too" | With the bot off, the internal reviewer is the only independent check. It always runs. |
+| "`--worktree new-child` starts the worker from my branch" | Not at the moment (Orca #21316): it branches from the repo's default branch. Create the child yourself and check its base. |
 
 ## Common mistakes
 
 - Naming the model inside a task "so it plays to its strengths". Routing belongs in `team.md`; tasks must survive a reroute.
 - Trusting a bot verdict left on an earlier commit. Match the review's `commit_id` to HEAD.
-- Starting wave N+1 before wave N is merged. Its child worktrees branch from the current HEAD and would miss that work.
+- Starting wave N+1 before wave N is merged, or without checking each child's base. Every child must contain the merged work; `git merge-base --is-ancestor` proves it.
 - Answering a worker's question in chat only. Write the answer into the task file and commit it, so a retry sees it.
 - Leaving settled workers unreleased. Reuse, retain or release each one, as Orca's guide requires.

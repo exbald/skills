@@ -42,7 +42,8 @@ The file:line references this spec relies on.
 # <Feature>: team
 
 Facts from `team_facts.py --hours <n>` at <date time>:
-<paste the lines you relied on, EXHAUSTED ones included>
+<paste the lines you relied on, the ROSTER line and EXHAUSTED meters included>
+Roster: as of <date> (<n> days old)<; if STALE: refreshed, or the user's OK to use it as is>
 
 | Role | Agent | --model | --effort | Family | Why (evidence) | Fallback |
 |---|---|---|---|---|---|---|
@@ -55,7 +56,8 @@ Facts from `team_facts.py --hours <n>` at <date time>:
 | QA | | | | | | |
 
 Family check: reviewer <family> differs from every coder family (<families>); QA <family> likewise.
-GitHub review bot: <verdict bot via workflow | Codex connector | none>
+GitHub review bot: on (<verdict bot via workflow | Codex connector>) | off
+(Off: no PR and no bot loop. The internal reviewer still runs, and the user opens the PR.)
 ```
 
 ## plan.md
@@ -87,7 +89,7 @@ Human-only steps (secrets, DNS, payments, production migrations, bot-quota decis
 ```markdown
 # <Feature>: run state
 
-Run: <run id> · Branch: <branch> · PR: <url> · Coordinator: <agent / model>
+Run: <run id> · Branch: <branch> · Bot: <on | off> · PR: <url, or none while the bot is off> · Coordinator: <agent / model>
 
 | Task | Wave | Agent / model (effective) | Dispatch | Child branch | Guard diff | Verification rerun | Review | Merge commit | Status |
 |---|---|---|---|---|---|---|---|---|---|
@@ -158,6 +160,7 @@ Run each command from the worktree root. Each must give the stated result.
 - Push, merge, rebase, amend or force anything, or run `git add -A`, `git add .` or `git commit -a`.
 - Leave TODOs, stubs, placeholder values, or mocks of the code under test.
 - Start a dev server, the e2e suite, or other agents.
+- Run destructive commands: deleting anything outside your worktree, dropping or truncating a database, killing a process you did not start, or pruning Docker.
 
 ## Stop and ask the coordinator if
 - you need a file that is not listed;

@@ -49,5 +49,32 @@ class Quota(unittest.TestCase):
         self.assertIn("Other Models = third-party models in cursor", out)
 
 
+ROSTER = os.path.join(HERE, "fixtures", "roster", "roster.md")
+DAY_MS = 86400 * 1000
+AS_OF_MS = 1791158400000  # 2026-10-05T00:00:00Z
+
+
+def run_roster(now_ms):
+    p = subprocess.run([sys.executable, SCRIPT, "--accounts-json", FIXTURE, "--now-ms", str(now_ms),
+                        "--no-models", "--roster", ROSTER], capture_output=True, text=True)
+    return p.returncode, p.stdout + p.stderr
+
+
+class RosterAge(unittest.TestCase):
+    def test_fresh_roster_is_ok(self):
+        _, out = run_roster(AS_OF_MS + 3 * DAY_MS)
+        self.assertRegex(out, r"ROSTER as of 2026-10-05 \(3 days old\): ok")
+
+    def test_stale_roster_warns(self):
+        _, out = run_roster(AS_OF_MS + 20 * DAY_MS)
+        self.assertRegex(out, r"ROSTER as of 2026-10-05 \(20 days old\): STALE")
+        self.assertIn("refresh references/roster.md or get the user's OK", out)
+
+    def test_missing_date_warns(self):
+        p = subprocess.run([sys.executable, SCRIPT, "--accounts-json", FIXTURE, "--no-models",
+                            "--roster", FIXTURE], capture_output=True, text=True)
+        self.assertIn("ROSTER has no roster_as_of date", p.stdout + p.stderr)
+
+
 if __name__ == "__main__":
     unittest.main()

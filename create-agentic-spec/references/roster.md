@@ -1,6 +1,8 @@
 # Team roster and routing
 
-Data captured **2026-10-05**. Refresh it when it is more than 30 days old, when `team_facts.py` shows a model this file does not cover, or when a pick here keeps failing (section 6).
+roster_as_of: 2026-10-05
+
+Update that date whenever you refresh this file. `team_facts.py` prints the roster's age and marks it STALE after 14 days. A stale roster gets refreshed (section 6), or the user explicitly agrees to use it as is. Also refresh it when `team_facts.py` shows a model this file does not cover, or when a pick here keeps failing.
 
 ## 1. Facts first
 

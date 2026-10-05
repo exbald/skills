@@ -14,6 +14,7 @@ Then either:
 
 - **Symlink everything:** `for d in ~/.claude/skills-exbald/*/; do ln -s "$d" ~/.claude/skills/; done`
 - **Pick individual skills:** `ln -s ~/.claude/skills-exbald/copywriting ~/.claude/skills/copywriting`
+- **Or use the skills CLI** (the one Orca uses for its own skills): `npx skills add exbald/skills --skill create-agentic-spec -g`. Swap in any skill name; `--list` shows them all.
 
 Some skills reference user-specific paths (notably `crm` expects a `~/personal-os/CRM/` directory). Adapt those to your own setup.
 
