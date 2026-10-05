@@ -74,6 +74,7 @@ Most skills auto-activate from your request. `concise` is the exception — it s
 - **command-development** — author slash commands — frontmatter, arguments, dynamic execution.
 - **create-spec** — generate feature specs optimized for parallel agent execution and wave planning.
 - **create-agentic-spec** — plan and run a feature as an [Orca](https://www.onorca.dev) orchestration: picks the PM, coder, reviewer and QA models at run time from live quota and a dated benchmark roster, writes model-agnostic task specs, gives each coder its own child worktree, verifies every worker independently, and loops on the GitHub review bot after each wave. Ships a spec linter, a worker-diff checker and a quota reader.
+- **autonomous-spec-runs** — set up a codebase so one agent can build a large change unattended for hours or days, safely and resumably: an ADR, specs in git as waves of self-contained tasks, an `AGENTS.md` contract, and guardrail hooks that enforce each task's file boundary. Written from a real 64-task overhaul run with ZCode Goal mode on a remote Linux box.
 - **codemaps** — deterministic, auto-updating repo map (routes, API, data model with FK edges, components, env, specs) that agents read first as grounded truth; ships a Next.js+Drizzle reference generator, cross-stack scanner recipes, and a Stop-hook auto-refresh.
 - **mcp-integration** — integrate MCP servers (SSE, stdio, HTTP, WebSocket) into Claude Code plugins.
 - **claude-opus-4-5-migration** — migrate prompts and code from older Claude models to Opus 4.5.
