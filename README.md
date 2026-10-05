@@ -1,6 +1,6 @@
 # skills
 
-A collection of **49 Claude Code skills** covering marketing, copywriting, SEO, engineering patterns, Claude Code tooling, and decision-making workflows. Each skill is a self-contained `SKILL.md` (plus optional references and scripts) that extends Claude with specialized knowledge or process. Drop them into `~/.claude/skills/` and Claude will activate the right one automatically based on your request.
+A collection of **51 Claude Code skills** covering marketing, copywriting, SEO, engineering patterns, Claude Code tooling, and decision-making workflows. Each skill is a self-contained `SKILL.md` (plus optional references and scripts) that extends Claude with specialized knowledge or process. Drop them into `~/.claude/skills/` and Claude will activate the right one automatically based on your request.
 
 ## Install
 
@@ -73,6 +73,7 @@ Most skills auto-activate from your request. `concise` is the exception — it s
 - **agent-development** — author Claude Code subagents — frontmatter, descriptions, tools, examples.
 - **command-development** — author slash commands — frontmatter, arguments, dynamic execution.
 - **create-spec** — generate feature specs optimized for parallel agent execution and wave planning.
+- **create-agentic-spec** — plan and run a feature as an [Orca](https://www.onorca.dev) orchestration: picks the PM, coder, reviewer and QA models at run time from live quota and a dated benchmark roster, writes model-agnostic task specs, gives each coder its own child worktree, verifies every worker independently, and loops on the GitHub review bot after each wave. Ships a spec linter, a worker-diff checker and a quota reader.
 - **codemaps** — deterministic, auto-updating repo map (routes, API, data model with FK edges, components, env, specs) that agents read first as grounded truth; ships a Next.js+Drizzle reference generator, cross-stack scanner recipes, and a Stop-hook auto-refresh.
 - **mcp-integration** — integrate MCP servers (SSE, stdio, HTTP, WebSocket) into Claude Code plugins.
 - **claude-opus-4-5-migration** — migrate prompts and code from older Claude models to Opus 4.5.
