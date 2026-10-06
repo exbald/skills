@@ -15,6 +15,9 @@ python3 scripts/team_facts.py --hours <expected run length> --probe-clis
 - A meter marked **EXHAUSTED** is out. A meter marked **resets during run** is usable only for work that starts after the reset.
 - DeepSeek is not an Orca worker id. Its harness CLI is `dsh` (the launchers are `dsh-tui` and `dst`), not `deepseek`, and its key sits in the DSH credential store rather than the environment; `dsh-tui doctor` confirms both. For a one-shot, read-only review, pipe the instructions and the diff into `DSH_PERMISSION_MODE=read-only dsh --profile headless -`; headless mode otherwise defaults to `workspace-write`. To pin a model, pass `--patch <file>`, where the file holds `- id: agent-default-model` with `config: {provider: deepseek-official, model: deepseek-flash}`. The patch replaces the whole config block, so leaving out `provider` makes startup fail. DeepSeek's API accepts only `deepseek-flash` (currently V4.1 Flash, II 39) and `deepseek-v4-pro` (V4 Pro 0813, II 36, and more expensive). Verified with a live headless probe on 2026-10-05.
 - Untracked agents (opencode, opencode2, muse) are usable. Watch worker output for rate-limit errors and reroute only after a proven failure.
+- **The facts can be wrong in both directions** (2026-10-06):
+  - An agent marked unknown or "sign-in expired" can work. Before you exclude one you need, probe it with a one-turn dispatch (`run-loop.md`, preflight).
+  - A committed repo config can override an agent's own model. Before routing to opencode or zcode, look for one in the target repo, such as `opencode.json`. One pinned opencode to a provider with no local key, so the agent failed `Unauthorized` there.
 - Claude has two meters. `weekly` caps every claude model, fable included; `fableWeekly` is an extra cap on fable alone. A low `fableWeekly` never makes fable available while `weekly` is full. `team_facts.py` already applies this rule.
 
 ## 2. Model families (for the diversity rule)
