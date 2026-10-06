@@ -13,6 +13,7 @@ You are the PM and the coordinator. Workers on the models best suited to each jo
 
 - A feature with two or more separable pieces of work, in a repo registered in Orca, with orchestration enabled (Orca Settings → Experimental).
 - Not for a one-file change (do it yourself), or for work outside Orca (use autonomous-spec-runs or create-spec).
+- Expect real overhead. One run of 7 tasks in 3 waves (about 600 lines) took about 7 hours from spec to merge, with about 22 worker dispatches and 9 bot reviews, while master moved three times. With fewer than about three tasks, one session with create-spec is usually faster.
 
 **REQUIRED BACKGROUND:** autonomous-spec-runs for task anatomy, stop conditions and "the transcript is not evidence". Orca's own guide governs the lifecycle (authority, waits, settlement, release, recovery): run `orca skills get orchestration --full` before the first orca command and follow it. This skill adds the team, the spec and the gates.
 
@@ -32,11 +33,12 @@ You are the PM and the coordinator. Workers on the models best suited to each jo
 2. **Pick the team.** Run `python3 scripts/team_facts.py --hours <expected run length>`, then follow `references/roster.md`. Write `team.md`. If the script reports the roster STALE, refresh the roster or get the user's explicit OK to use it as is.
 3. **Write the spec** in `specs/<feature>/` from `references/templates.md`. Then:
    - `python3 scripts/spec_guard.py lint specs/<feature>` must report 0 errors.
+   - Probe every code block a task must copy. Write it to its target path in a scratch child worktree, run the repo's typecheck and lint there, then revert with `git checkout`. The critic reads but never compiles. On one run it missed an import-order rule and a React ref read during render, and the probe caught both.
    - Run the spec critic (`references/run-loop.md`, Spec critique) and fix every finding.
    - Commit the spec to the feature branch. Child worktrees only see committed files, and the spec plus `run-state.md` is the state a new coordinator resumes from.
 4. **Confirm.** Show the user `team.md` and the wave table. Launch on their go, unless they already asked you to run it.
 5. **Run** wave by wave with `references/run-loop.md`, starting with its "Known Orca sharp edges". With the bot on, run `references/review-loop.md` after every push.
-6. **Report** per task: outcome, evidence, merge commit. Then the bot status and anything open. Never merge the PR: the merge belongs to the human. With the bot off, you open no PR; the user does.
+6. **Report** per task: outcome, evidence, merge commit. Then the bot status and anything open. Never merge the PR: the merge belongs to the human. The one exception is a user who explicitly hands you the merge; then follow `references/run-loop.md`, Ship. With the bot off, you open no PR; the user does.
 
 ## Team rules
 
@@ -60,8 +62,9 @@ You are the PM and the coordinator. Workers on the models best suited to each jo
 1. Every coder gets its own child worktree, which you create and base-check before its agent starts (`run-loop.md` 2a). Orca's `--worktree new-child` currently branches from the wrong base. Read-only workers use `--worktree current`, and only while no coder edits it.
 2. Workers never push, merge, rebase or `git add -A`. You are the only integrator.
 3. A `worker_done` is a claim. Accept it only after `spec_guard.py diff` passes and you have rerun every Verification command in the child worktree yourself. Write both results into `run-state.md`.
-4. After a wave merges: full gates on the merged branch, then the reviewer, then fix tasks for P1/P2 findings, then push. With the bot on, its review of that exact HEAD must be clean before the next wave starts.
+4. After a wave merges: full gates on the merged branch, then the reviewer, then fix tasks for P1/P2 findings, then push. With the bot on, its review of that exact HEAD must be clean before the next wave starts. `review-loop.md` defines clean, both mid-run and on the final head.
 5. After two failed attempts at a task, move it up a tier or fix the spec. Orca fails a task after its third failed attempt; never route around that.
+6. Check master before every dispatch and every push: `git fetch`, the behind count, `git merge-tree`. If it moved, follow `run-loop.md`, Master moved, before anything else. A conflicting PR runs no CI and no bot.
 
 ## Red flags: stop and correct course
 
@@ -77,6 +80,9 @@ You are the PM and the coordinator. Workers on the models best suited to each jo
 | "The user wants it running in 15 minutes, so skip the critic, review or verification" | Speed comes from running workers in parallel, not from removing gates. |
 | "The bot is off, so the internal review can go too" | With the bot off, the internal reviewer is the only independent check. It always runs. |
 | "`--worktree new-child` starts the worker from my branch" | Not at the moment (Orca #21316): it branches from the repo's default branch. Create the child yourself and check its base. |
+| "The bot hasn't reviewed in 20 minutes, it must be slow" | Check `gh pr view --json mergeable` first: a CONFLICTING PR runs no workflows at all. Then check whether the shared runners are just queued (`gh run list`). |
+| "Master only moved docs, so I'll push now and merge later" | A conflict blocks CI and the bot, and a migration clash breaks the deploy. Merge master, rerun the gates, then push. |
+| "I'll renumber our migration to the next free slot" | A renamed migration keeps a stale snapshot, and the next generate re-adds the other branch's columns. Regenerate on top of master's snapshot. |
 
 ## Common mistakes
 
@@ -85,3 +91,5 @@ You are the PM and the coordinator. Workers on the models best suited to each jo
 - Starting wave N+1 before wave N is merged, or without checking each child's base. Every child must contain the merged work; `git merge-base --is-ancestor` proves it.
 - Answering a worker's question in chat only. Write the answer into the task file and commit it, so a retry sees it.
 - Leaving settled workers unreleased. Reuse, retain or release each one, as Orca's guide requires.
+- Starting a `check --wait` waiter with `&` inside a foreground command. The waiter dies with that shell. Run it as the harness's background task.
+- Changing a team role because the user asked "why X instead of Y?". That is a question. Show the current routing and the trade-off, and change `team.md` only after they confirm.

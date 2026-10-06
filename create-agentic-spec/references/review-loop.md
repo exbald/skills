@@ -14,7 +14,10 @@ Run this after every push. It is done when the bot's review of the exact HEAD yo
 ```text
 HEAD=$(git rev-parse HEAD)
 N=$(gh pr view --json number -q .number)
+gh pr view "$N" --json mergeable,mergeStateStatus
 ```
+
+**First make sure the PR can run workflows.** A CONFLICTING PR runs nothing: no CI and no bot. Merge master first (`run-loop.md` 2g) and push. Runs stuck in `queued` mean the shared runners are busy (`gh run list --status in_progress`), not that the bot failed.
 
 **Verdict bot:**
 
@@ -40,7 +43,8 @@ Poll about once a minute.
 
 ## Clean means
 
-- **Verdict bot:** the verdict on HEAD is APPROVE.
+- **Verdict bot, final head:** the verdict on HEAD is APPROVE.
+- **Verdict bot, mid-run:** some bots withhold APPROVE until the whole run is done ("do not merge yet: waves 2–3 pending"). A COMMENT verdict on HEAD whose only blocker is that the run is unfinished, and that lists nothing actionable, counts as clean for starting the next wave. Record it that way in `run-state.md`. Anything actionable makes it a fix round.
 - **Codex:** its review of HEAD adds no new P-badge comment (it says it found no major issues, or reacts with 👍), and every earlier Codex comment carries your 👍.
 
 ## A fix round
@@ -58,6 +62,14 @@ Poll about once a minute.
 3. **Verdict bot: let it re-review.** The push triggers a fresh review. Post one PR comment listing each fix and its commit, then wait for the verdict on the new HEAD.
 4. **A finding you believe is wrong:** reply with the evidence (file:line, a test), leave it without 👍 and unresolved, and list it for the user. Never drop a finding silently.
 5. **Four rounds without a clean review of HEAD:** stop and report the open findings to the user.
+
+## A red check that is not yours
+
+Read the failing test in `gh run view <run id> --log-failed`.
+- **A known flake:** for example, a rate-limit test whose request loop straddles a wall-clock minute. Rerun with `gh run rerun <run id> --failed`. That keeps the approval and adds no commit.
+- **Anything you cannot explain:** it is a finding. Treat it as one.
+
+Never merge, or call a PR ready, on a red check.
 
 ## Never
 

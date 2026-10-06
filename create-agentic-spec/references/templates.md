@@ -78,6 +78,24 @@ One paragraph per wave: what it unlocks, and why its tasks cannot collide.
 |---|---|
 | src/db/schema.ts | w1-schema |
 | pnpm-lock.yaml | nobody; this feature adds no dependencies |
+
+## QA brief (after the last wave)
+The coordinator first starts QA's database `<name>` on port `<port>` and migrates it. It smoke-starts the app once with the command below, makes one real call through each third-party key, stops the app, and removes what the smoke run wrote.
+
+> Prove each acceptance criterion marked (QA) in requirements.md against the app running from this worktree.
+> **Start the app:** `<exact command>` on port `<port>`, without printing any environment value.
+> **Test data:** `qa-<case>-<unix seconds>` style values. Read results with `<read-only query>`.
+> **Cases:** one bullet per criterion, with its exact steps and expected result. A case that depends on a rate limit or a time window starts at a fresh wall-clock minute.
+> **If a third-party answer differs from requirements → Evidence:** stop the app and ask the coordinator.
+> **Screenshots:** which cases, at which widths, in which themes.
+> **Between cases:** how to reset state, for example by signing out. Never clear cookies or storage wholesale.
+> **House rules:**
+> - Use one tab, never activate it, and close it at the end.
+> - Check `innerWidth` before measuring, because the browser may be zoomed.
+> - Hit-test with `elementFromPoint` before each click, because extensions draw over forms.
+> - Stop the app by its process group, never by port.
+> - Never print environment values or open `.env*` files. SQL is read-only.
+> **Report:** `qa/report.md` with a summary table, then each criterion's steps, expected result, actual result, evidence and PASS or FAIL. Commit only `qa/`. Fix nothing.
 ```
 
 ## action-required.md
@@ -100,6 +118,18 @@ Run: <run id> · Branch: <branch> · Bot: <on | off> · PR: <url, or none while 
 
 ## Questions answered
 | Task | Question | Answer | Recorded in |
+|---|---|---|---|
+
+## Master merges
+| Master commit | What it brought | Conflicts and how they were resolved | Gates on the merged result |
+|---|---|---|---|
+
+## QA
+| Task | Agent / model | Dispatch | Result | Coordinator re-check |
+|---|---|---|---|---|
+
+## Containers
+| Name | Port | Started for | Removed |
 |---|---|---|---|
 ```
 
