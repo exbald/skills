@@ -185,8 +185,11 @@ def tool_calls(transcript_path):
     try:
         with open(transcript_path) as f:
             for line in f:
-                for m in re.finditer(r'"type"\s*:\s*"(?:tool_use|function_call|custom_tool_call)"[^{}]*?"name"\s*:\s*"([^"]+)"', line):
-                    names.append(m.group(1))
+                found = re.findall(r'"type"\s*:\s*"(?:tool_use|function_call|custom_tool_call)"[^{}]*?"name"\s*:\s*"([^"]+)"', line)
+                # A shell call running `mem.py add|update` is a save too.
+                if found and re.search(r"mem\.py\\?\"?\s+(?:add|update)\b", line):
+                    found[-1] = "mem_add (via mem.py)"
+                names.extend(found)
     except OSError:
         return []
     return names
