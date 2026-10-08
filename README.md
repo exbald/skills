@@ -1,6 +1,6 @@
 # skills
 
-A collection of **51 Claude Code skills** covering marketing, copywriting, SEO, engineering patterns, Claude Code tooling, and decision-making workflows. Each skill is a self-contained `SKILL.md` (plus optional references and scripts) that extends Claude with specialized knowledge or process. Drop them into `~/.claude/skills/` and Claude will activate the right one automatically based on your request.
+A collection of **52 Claude Code skills** covering marketing, copywriting, SEO, engineering patterns, Claude Code tooling, and decision-making workflows. Each skill is a self-contained `SKILL.md` (plus optional references and scripts) that extends Claude with specialized knowledge or process. Drop them into `~/.claude/skills/` and Claude will activate the right one automatically based on your request.
 
 ## Install
 
@@ -78,6 +78,7 @@ Most skills auto-activate from your request. `concise` is the exception — it s
 - **autonomous-spec-runs** — set up a codebase so one agent can build a large change unattended for hours or days, safely and resumably: an ADR, specs in git as waves of self-contained tasks, an `AGENTS.md` contract, and guardrail hooks that enforce each task's file boundary. Written from a real 64-task overhaul run with ZCode Goal mode on a remote Linux box.
 - **codemaps** — deterministic, auto-updating repo map (routes, API, data model with FK edges, components, env, specs) that agents read first as grounded truth; ships a Next.js+Drizzle reference generator, cross-stack scanner recipes, and a Stop-hook auto-refresh.
 - **mcp-integration** — integrate MCP servers (SSE, stdio, HTTP, WebSocket) into Claude Code plugins.
+- **shared-memory-mcp** — one cross-agent memory for every tool: recall project decisions at session start, save and update what matters, summarize before ending. `scripts/install.py` wires hooks, rules, and the skill into Claude Code, Codex, Gemini, Cursor, OpenCode, Cline, Hermes, ZCode, and Antigravity. Needs your own [shared-memory-mcp](https://github.com/exbald/shared-memory-mcp) server.
 - **claude-opus-4-5-migration** — migrate prompts and code from older Claude models to Opus 4.5.
 
 ### Workflows & Learning
