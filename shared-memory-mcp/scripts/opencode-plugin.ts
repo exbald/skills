@@ -1,5 +1,5 @@
 // OpenCode plugin: inject this project's shared memories into the system prompt.
-// Installed by install.py to ~/.config/opencode/plugin/shared-memory.ts
+// Installed by install.py to ~/.config/opencode/plugins/shared-memory.ts
 import { execFileSync } from "node:child_process"
 import { homedir } from "node:os"
 

@@ -83,4 +83,4 @@ mem.py context            # what the session-start hook injects for the current 
 - `prompt`: optional per-prompt recall (off unless `SHARED_MEMORY_PROMPT_RECALL=1`); injects up to 3 memories matching the prompt that were not already shown this session.
 - `stop`: for tools that hand over the transcript; blocks once after 10+ tool calls with no `mem_add`/`mem_update`, asking the agent to save what matters.
 
-Install or repair for every tool on the machine: `scripts/install.sh` (idempotent; backs up each file it changes; `--dry-run` to preview). See `references/tools.md` for where each tool keeps its hooks, MCP config, and skills.
+Install or repair for every tool on the machine: `python3 scripts/install.py` (idempotent; backs up each file it changes; `--dry-run` to preview; `--only codex,orca` to limit it). It also writes the `shared-memory` MCP entry for each tool, including Orca's Codex homes, the GitHub Copilot CLI, and VS Code, on Linux and macOS. See `references/tools.md` for where each tool keeps its hooks, MCP config, and skills.

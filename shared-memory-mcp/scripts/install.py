@@ -13,10 +13,16 @@ import json
 import os
 import re
 import shutil
+import subprocess
 import sys
 import time
 
 HOME = os.path.expanduser("~")
+MACOS = sys.platform == "darwin"
+APP_SUPPORT = f"{HOME}/Library/Application Support" if MACOS else os.environ.get("XDG_CONFIG_HOME", f"{HOME}/.config")
+ENV_FILE = f"{HOME}/.config/shared-memory/env"
+SERVER = "shared-memory"  # MCP server name in every config
+OLD_URL = "https://shared-memory-mcp.vercel.app/mcp"  # retired 2026-10-08
 SKILL_DIR = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
 SKILL_LINK = f"{HOME}/.agents/skills/shared-memory-mcp"
 MEM = f"{SKILL_LINK}/scripts/mem.py"
@@ -40,10 +46,53 @@ One memory store shared by every agent and device the user runs. Use it, don't j
 """
 
 
+def load_env():
+    """(url, key) from the environment, else ~/.config/shared-memory/env."""
+    vals = {}
+    if os.path.exists(ENV_FILE):
+        for line in open(ENV_FILE):
+            m = re.match(r"\s*(?:export\s+)?(\w+)\s*=\s*['\"]?([^'\"\n]*)", line)
+            if m:
+                vals[m.group(1)] = m.group(2)
+    url = os.environ.get("SHARED_MEMORY_URL") or vals.get("SHARED_MEMORY_URL") or "https://memory.no-code.gdn/mcp"
+    key = os.environ.get("SHARED_MEMORY_API_KEY") or vals.get("SHARED_MEMORY_API_KEY") or ""
+    return url, key
+
+
+def orca_codex_homes():
+    """CODEX_HOME directories Orca creates for the Codex panes it runs."""
+    root = f"{APP_SUPPORT}/orca"
+    homes = [f"{root}/codex-runtime-home/home"]
+    accounts = f"{root}/codex-accounts"
+    if os.path.isdir(accounts):
+        homes += [f"{accounts}/{a}/home" for a in sorted(os.listdir(accounts))]
+    return [h for h in homes if os.path.isfile(f"{h}/config.toml")]
+
+
+OPENCODE2_EXPORT = """
+// OpenCode 2: a default plugin object (id + server plugin + setup). Added by install.py only
+// when OpenCode 2 is installed; OpenCode 1 calls every export and would fail on an object.
+export default { id: "shared-memory", server: SharedMemory, setup: async () => () => {} }
+"""
+
+
+def opencode_major():
+    exe = shutil.which("opencode")
+    if not exe:
+        return 1
+    try:
+        out = subprocess.run([exe, "--version"], capture_output=True, text=True, timeout=20).stdout
+    except (OSError, subprocess.SubprocessError):
+        return 1
+    m = re.search(r"(\d+)\.\d+", out)
+    return int(m.group(1)) if m else 1
+
+
 class Installer:
     def __init__(self, dry):
         self.dry = dry
         self.notes = []
+        self.url, self.key = load_env()
 
     # ---------- file helpers ----------
     def backup(self, path):
@@ -71,7 +120,7 @@ class Installer:
         return json.loads(text) if text else {}
 
     def write_json(self, path, data):
-        return self.write(path, json.dumps(data, indent=2) + "\n")
+        return self.write(path, json.dumps(data, indent=2, ensure_ascii=False) + "\n")
 
     def link(self, target, link_path):
         if os.path.islink(link_path) and os.path.realpath(link_path) == os.path.realpath(target):
@@ -95,6 +144,44 @@ class Installer:
         pattern = re.compile(re.escape(BLOCK_START) + r".*?" + re.escape(BLOCK_END) + r"\n?", re.S)
         new = pattern.sub(RULES_BLOCK, old) if pattern.search(old) else (old.rstrip() + "\n\n" + RULES_BLOCK if old.strip() else RULES_BLOCK)
         self.write(path, new)
+
+    # ---------- MCP server entries ----------
+    def mcp_json(self, path, section, entry, create=True):
+        """Set data[section...]["shared-memory"] = entry in a JSON config. section may be "a.b"."""
+        if not self.key:
+            return
+        if not os.path.exists(path) and not create:
+            return
+        data = self.read_json(path)
+        keys = section.split(".")
+        node = data
+        for k in keys:
+            node = node.setdefault(k, {})
+        if node.get(SERVER) == entry:
+            return  # already right; don't reformat a file other tools also write
+        node[SERVER] = entry
+        self.write_json(path, data)
+
+    def mcp_toml(self, path):
+        """Codex: replace the [mcp_servers.shared-memory] table (and its sub-tables) in config.toml."""
+        if not self.key:
+            return
+        text = open(path).read() if os.path.exists(path) else ""
+        text = text.replace(OLD_URL, self.url)
+        out, skip = [], False
+        for line in text.splitlines():
+            head = re.match(r"\s*\[([^\[\]]+)\]\s*(#.*)?$", line)
+            if head:
+                name = head.group(1).strip()
+                skip = name in (f"mcp_servers.{SERVER}", f'mcp_servers."{SERVER}"') or name.startswith(
+                    (f"mcp_servers.{SERVER}.", f'mcp_servers."{SERVER}".'))
+            if not skip:
+                out.append(line)
+        block = f'[mcp_servers.{SERVER}]\nurl = "{self.url}"\nhttp_headers = {{ "X-API-Key" = "{self.key}" }}\n'
+        self.write(path, "\n".join(out).rstrip() + "\n\n" + block)
+
+    def http_entry(self, url_key="url", **extra):
+        return {**extra, url_key: self.url, "headers": {"X-API-Key": self.key}}
 
     # ---------- Claude-style hook merging ----------
     @staticmethod
@@ -141,16 +228,34 @@ class Installer:
                 self.write_json(local, {**{k: v for k, v in ldata.items() if k != "hooks"}, **({"hooks": cleaned} if cleaned else {})})
         self.rules(f"{HOME}/.claude/rules/shared-memory.md", whole_file=True)
         self.link(SKILL_DIR, f"{HOME}/.claude/skills/shared-memory-mcp")
+        self.mcp_json(f"{HOME}/.claude.json", "mcpServers", self.http_entry(type="http"))
 
-    def codex(self):
-        path = f"{HOME}/.codex/hooks.json"
+    def codex_home(self, home, label):
+        """Hooks + MCP for one CODEX_HOME (~/.codex, or one Orca creates)."""
+        path = f"{home}/hooks.json"
         data = self.read_json(path)
         hooks = data.get("hooks", {})
         for event, ev in (("SessionStart", "session-start"), ("UserPromptSubmit", "prompt"), ("Stop", "stop")):
             hooks = self.merge_hooks(hooks, event, f"python3 {MEM} hook {ev} --tool codex", extra={"timeout": 20})
         if self.write_json(path, {**data, "hooks": hooks}):
-            self.notes.append("Codex: open `codex`, run /hooks, and trust the 3 shared-memory hooks (untrusted hooks never run).")
+            self.notes.append(f"{label}: open Codex there, run /hooks, and trust the 3 shared-memory hooks (untrusted hooks never run).")
+        self.mcp_toml(f"{home}/config.toml")
+
+    def codex(self):
+        self.codex_home(f"{HOME}/.codex", "Codex")
         self.rules(f"{HOME}/.codex/AGENTS.md")
+
+    def orca(self):
+        # Orca starts Codex panes with their own CODEX_HOME (one runtime home, one per account).
+        # Claude Code panes use ~/.claude and OpenCode mirrors ~/.config/opencode, so only Codex needs this.
+        for home in orca_codex_homes():
+            self.codex_home(home, f"Orca Codex ({home.replace(HOME, '~')})")
+            self.link(SKILL_DIR, f"{home}/skills/shared-memory-mcp")
+            agents = f"{home}/AGENTS.md"
+            if os.path.islink(agents) or not os.path.exists(agents):
+                self.link(f"{HOME}/.codex/AGENTS.md", agents)  # Orca's own pattern: share the user's AGENTS.md
+            else:
+                self.rules(agents)
 
     def gemini(self):
         path = f"{HOME}/.gemini/settings.json"
@@ -160,6 +265,7 @@ class Installer:
         hooks = self.merge_hooks(hooks, "BeforeAgent", f"python3 {MEM} hook prompt --tool gemini", extra={"name": "shared-memory-recall", "timeout": 20000})
         self.write_json(path, {**data, "hooks": hooks})
         self.rules(f"{HOME}/.gemini/GEMINI.md")
+        self.mcp_json(path, "mcpServers", self.http_entry(url_key="httpUrl"))
 
     def zcode(self):
         path = f"{HOME}/.zcode/cli/config.json"
@@ -171,11 +277,24 @@ class Installer:
         events = self.merge_hooks(events, "Stop", f"python3 {MEM} hook stop --tool zcode", extra={"timeout": 20})
         self.write_json(path, {**data, "hooks": {**hooks, "enabled": True, "events": events}})
         self.rules(f"{HOME}/.zcode/AGENTS.md")
+        self.mcp_json(path, "mcp.servers", self.http_entry(type="remote"))
 
     def opencode(self):
-        src = os.path.join(SKILL_DIR, "scripts", "opencode-plugin.ts")
-        self.write(f"{HOME}/.config/opencode/plugin/shared-memory.ts", open(src).read())
-        self.rules(f"{HOME}/.config/opencode/AGENTS.md")
+        # OpenCode 2.x loads ~/.config/opencode/plugins/; 1.x used plugin/. Keep exactly one copy.
+        base = f"{HOME}/.config/opencode"
+        src = open(os.path.join(SKILL_DIR, "scripts", "opencode-plugin.ts")).read()
+        if opencode_major() >= 2:  # 2.x validates a default plugin object; 1.x would try to call it
+            src += OPENCODE2_EXPORT
+        self.write(f"{base}/plugins/shared-memory.ts", src)
+        legacy = f"{base}/plugin/shared-memory.ts"
+        if os.path.exists(legacy):
+            print(f"  {'would remove' if self.dry else 'remove'} {legacy.replace(HOME, '~')}")
+            if not self.dry:
+                self.backup(legacy)
+                os.remove(legacy)
+        self.rules(f"{base}/AGENTS.md")
+        self.mcp_json(f"{base}/opencode.json", "mcp", {"type": "remote", "url": self.url, "enabled": True,
+                                                        "headers": {"X-API-Key": self.key}})
 
     def hermes(self):
         path = f"{HOME}/.hermes/config.yaml"
@@ -202,18 +321,34 @@ class Installer:
         else:
             self.write(path, f"#!/usr/bin/env bash\nexec python3 {MEM} hook session-start --tool cline --once\n", mode=0o755)
         self.rules(f"{HOME}/.cline/rules/shared-memory.md", whole_file=True)
+        self.mcp_json(f"{HOME}/.cline/data/settings/cline_mcp_settings.json", "mcpServers",
+                      self.http_entry(type="streamableHttp"))
 
     def antigravity(self):
         path = f"{HOME}/.gemini/config/hooks.json"
         data = self.read_json(path)
         entry = {"PreInvocation": [{"type": "command", "command": f"python3 {MEM} hook session-start --tool antigravity --cached", "timeout": 20}]}
         self.write_json(path, {**data, "shared-memory": entry})
-        self.link(SKILL_DIR, f"{HOME}/.gemini/config/skills/shared-memory-mcp")
+        # The CLI reads ~/.gemini/antigravity-cli/skills (seen on macOS, agy 1.3); older builds used config/skills.
+        cli_skills = f"{HOME}/.gemini/antigravity-cli/skills"
+        self.link(SKILL_DIR, f"{cli_skills if os.path.isdir(cli_skills) else HOME + '/.gemini/config/skills'}/shared-memory-mcp")
+        self.mcp_json(f"{HOME}/.gemini/config/mcp_config.json", "mcpServers", self.http_entry(url_key="serverUrl"))
 
     def cursor(self):
         # Cursor imports ~/.claude/settings.json hooks (thirdPartyExtensibilityEnabled, default on);
         # a ~/.cursor/hooks.json copy would run them twice. mem.py detects Cursor's payload.
+        self.mcp_json(f"{HOME}/.cursor/mcp.json", "mcpServers", self.http_entry())
         self.notes.append("Cursor: uses the Claude Code hooks (no separate file). Add the rules text under Settings > Rules > User Rules if you want it in Cursor's system prompt.")
+
+    def vscode(self):
+        # MCP only: VS Code (Copilot Chat) has no user-level hooks.
+        self.mcp_json(f"{APP_SUPPORT}/Code/User/mcp.json", "servers", self.http_entry(type="http"))
+
+    def copilot(self):
+        # GitHub Copilot CLI: MCP, user instructions, skills.
+        self.mcp_json(f"{HOME}/.copilot/mcp-config.json", "mcpServers", self.http_entry(type="http", tools=["*"]))
+        self.rules(f"{HOME}/.copilot/copilot-instructions.md")
+        self.link(SKILL_DIR, f"{HOME}/.copilot/skills/shared-memory-mcp")
 
 
 TOOLS = {
@@ -226,6 +361,9 @@ TOOLS = {
     "cline": f"{HOME}/.cline",
     "antigravity": f"{HOME}/.gemini/antigravity-cli",
     "cursor": f"{HOME}/.cursor",
+    "vscode": f"{APP_SUPPORT}/Code/User",
+    "copilot": f"{HOME}/.copilot",
+    "orca": f"{APP_SUPPORT}/orca",
 }
 
 
@@ -236,13 +374,10 @@ def main():
     o = p.parse_args()
     inst = Installer(o.dry_run)
 
-    env = f"{HOME}/.config/shared-memory/env"
-    if not os.path.exists(env):
-        key = os.environ.get("SHARED_MEMORY_API_KEY")
-        if not key:
-            sys.exit(f"Missing {env}. Re-run with SHARED_MEMORY_API_KEY=... set (and SHARED_MEMORY_URL if not the default).")
-        url = os.environ.get("SHARED_MEMORY_URL", "https://memory.no-code.gdn/mcp")
-        inst.write(env, f"SHARED_MEMORY_URL={url}\nSHARED_MEMORY_API_KEY={key}\n", mode=0o600)
+    if not os.path.exists(ENV_FILE):
+        if not inst.key:
+            sys.exit(f"Missing {ENV_FILE}. Re-run with SHARED_MEMORY_API_KEY=... set (and SHARED_MEMORY_URL if not the default).")
+        inst.write(ENV_FILE, f"SHARED_MEMORY_URL={inst.url}\nSHARED_MEMORY_API_KEY={inst.key}\n", mode=0o600)
 
     print("skill")
     inst.link(SKILL_DIR, SKILL_LINK)  # read by Codex, Gemini, Cursor, OpenCode, Cline, ZCode
