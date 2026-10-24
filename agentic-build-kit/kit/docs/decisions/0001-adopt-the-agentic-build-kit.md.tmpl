@@ -1,0 +1,30 @@
+# 0001. Agents build from executable specs, under guardrails, and merge and deploy what the reviewer approves
+
+- **Status:** Accepted
+- **Date:** {{DATE}}
+- **Deciders:** {{OWNER}}
+
+## Context
+
+{{PROJECT}} will be built by coding agents from several model families, often unattended. The work has to survive a stopped session, a change of model and a change of tool, and nothing an agent does may reach `{{DEFAULT_BRANCH}}` or production without review.
+
+## Decision
+
+- **Roles:** the lead (the strongest model) writes the specs, launches waves, audits, merges and deploys. Builders (cheaper models, in Claude Code or OpenCode) build one wave at a time, unattended, each in its own clone. The reviewer bot ({{REVIEWER_LOGIN}}) reviews every pull request, and an adversarial review by another model family runs on every spec before it merges.
+- **State lives in git, not in any agent tool:** specs, task status, `specs/LEDGER.md`, `BLOCKED.md` notes and these records.
+- **One contract for every agent:** `AGENTS.md`. Tool-specific files only import it.
+- **Tasks are self-contained:** literal verification commands, file lists, no shared files within a wave. The spec checker enforces the format.
+- **What the kit enforces:** hooks deny `.env*` files, lockfile and `.git/` writes, the paths and commands `agentkit.config.json` protects, deploys and merges by hand, force pushes, pushes to `{{DEFAULT_BRANCH}}`, history rewrites and killing processes by name or port; while a task is active, writes outside its file lists. A session with an active task can't end until the task is complete, verified, committed and pushed, or blocked.
+- **Who merges and deploys:** an agent merges a pull request once the reviewer bot approves its head and CI passes, through `node tools/guardrails/merge-approved.mjs`, and deploys `{{DEFAULT_BRANCH}}` through `node tools/guardrails/deploy-approved.mjs`, which rolls back an unhealthy release.
+- **What stays with {{OWNER}}:** secrets, paid accounts, payments, package publishing and app store submissions, everything in a spec's `action-required.md`, and any gate this record or a later one reserves to them.
+- **Open decisions have written defaults** in `specs/README.md`, so no agent invents one.
+
+## Alternatives considered
+
+- **One agent and one model for everything:** ties the project to one vendor's limits and blind spots, and loses cross-model review.
+- **Rules in prose only:** a capable model reasons its way past a rule it finds unpersuasive; hooks are the enforcement.
+- **A human merges and deploys every change:** stalls an unattended build; the reviewer bot, CI and the scripts' checks gate it instead.
+
+## Consequences
+
+Any capable agent can pick up the next task cold. Specs cost writing time, and the file-overlap rules constrain parallelism. Hooks exist only for harnesses that support them; the others rely on the checker and on review. Revisit when the reviewer bot, the deploy target or the harnesses change.

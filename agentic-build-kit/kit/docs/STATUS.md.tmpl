@@ -1,0 +1,26 @@
+# Status
+
+_Last updated: {{DATE}}_
+
+## Current milestone
+
+**Setup.** The agentic build kit is in ([0001](decisions/0001-adopt-the-agentic-build-kit.md)): the agent contract, the guardrails, the spec checker and the wave runner. Next: the product spec, then the build plan in `specs/README.md` for {{OWNER}} to approve (gate G0).
+
+## In progress
+
+- None yet.
+
+## Blockers
+
+- None.
+
+## Waiting on {{OWNER}}
+
+- Approve the build plan (`specs/README.md`), and the product spec it builds on.
+- Install the reviewer bot ({{REVIEWER_LOGIN}}) on {{REPO}}.
+
+## Next steps
+
+1. Write the product spec and the build plan.
+2. Write spec 01 from `specs/_template/`, and check it: `node tools/spec-check/check.mjs`.
+3. Build its first wave: `node tools/build/run-wave.mjs --spec specs/01-name --wave 1 --builder <name> --dry-run`, then without `--dry-run`.

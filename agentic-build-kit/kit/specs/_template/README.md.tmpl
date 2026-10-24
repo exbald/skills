@@ -1,0 +1,29 @@
+# Spec NN: name
+
+<!-- Copy this folder to specs/NN-name/ (two digits, lower-case words joined by dashes) and fill it in. The checker
+     skips this folder, since its name isn't NN-name; it checks the copy. -->
+
+- **Milestone:** M1
+- **Status:** written ahead, not started.
+- **Written against:** `{{DEFAULT_BRANCH}}` at 0000000 (YYYY-MM-DD). Run `node tools/spec-check/check.mjs --ready specs/NN-name` before the first task.
+- **Builder:** the cheaper builder for tasks tagged any model, the stronger one for strong-model tasks. A wave with any strong-model task runs with the stronger builder.
+- **Requirements:** [requirements.md](requirements.md). **Human steps:** [action-required.md](action-required.md).
+
+What this spec builds, in two or three sentences, and what it leaves for later.
+
+## Dependency graph
+
+```mermaid
+graph TD
+  t01["01 the first task"]
+```
+
+## Waves
+
+| Wave | Goal | Tasks |
+|---|---|---|
+| 1 | What the wave leaves working | task-01 |
+
+## Tasks
+
+- [ ] [task-01](tasks/task-01-example.md): The first task (any model)

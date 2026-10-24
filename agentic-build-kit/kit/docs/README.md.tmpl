@@ -1,0 +1,19 @@
+# Project records
+
+Where {{PROJECT}}'s decisions, progress and open problems live. Humans and coding agents both keep these current.
+
+| File | What it holds | Update when |
+|---|---|---|
+| [STATUS.md](STATUS.md) | Current milestone, what's in flight, blockers, open questions, next steps | Something starts, finishes, gets blocked or unblocked |
+| [log.md](log.md) | Dated progress log, newest first | End of every working session |
+| [decisions/](decisions/) | One record per significant decision (ADR): context, choice, alternatives rejected, consequences | A decision is made or reversed |
+| [../specs/](../specs/README.md) | Build plan, gates, open technical decisions, one executable spec folder per piece of work, task ledger | Before building each spec, and as tasks complete |
+<!-- Add the project's own rows: product spec, architecture, research. -->
+
+## Rules
+
+- **Decisions are append-only.** To change one, write a new record that supersedes it and mark the old one `Superseded by NNNN`.
+- **Copy [decisions/0000-template.md](decisions/0000-template.md)** and use the next free number.
+- **Blockers go in STATUS.md** with the date they started and who or what can unblock them.
+- **Use absolute dates** ({{DATE}}), never "yesterday" or "next week".
+- **Never put secrets here.** Name the env var or the secret store's key instead.
