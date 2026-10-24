@@ -1,0 +1,122 @@
+# Build plan
+
+- **Status:** Draft, {{DATE}}. {{OWNER}} approves it before spec 01 (gate G0).
+- **Inputs:** the product spec and architecture (add their paths), [decision records](../docs/decisions/), and the agent contract in [AGENTS.md](../AGENTS.md).
+- **This file:** the list of specs in build order, the gates between them, who executes what, and every open technical decision with its default. **No agent invents an answer to an open decision.** A blank override cell means the default is accepted.
+
+## Specs in build order
+
+Each spec is a folder written just before it is built, so it matches the code at that moment. UI specs are written after their screens are approved and frozen.
+
+| # | Spec | Milestone | Covers | Depends on | Design gate |
+|---|---|---|---|---|---|
+| 01 | `01-repo-harness` | M1 | The workspace, the project logger, `npm run verify` with the project's typecheck, lint and tests, the integration test harness, and CI | none | none |
+
+**One spec builds at a time** unless the checker is clean across the pair: `node tools/spec-check/check.mjs --across specs/NN-a specs/NN-b`. Two specs that share a file can't build side by side: the second builder meets code its spec didn't describe and stops with `BLOCKED.md`. A spec's first wave starts once the spec before it has merged its last wave. Database migrations go in build order; say here which spec takes which number.
+
+## Spec folder anatomy
+
+Copy `specs/_template/` to start a spec. The spec checker (`node tools/spec-check/check.mjs`) enforces this format.
+
+```
+specs/NN-name/
+├── README.md           header, dependency graph (mermaid), waves table with a goal per wave, task list
+├── requirements.md     goals, non-goals, acceptance criteria (cite feature/screen/flow IDs), decisions taken with rationale
+├── action-required.md  HUMAN-ONLY steps: accounts, secrets, OAuth clients, DNS, payments, data migrations
+└── tasks/
+    └── task-MM-slug.md
+```
+
+`README.md` has:
+- A header with `**Milestone:**`, `**Status:**` and `**Written against:**`, the `{{DEFAULT_BRANCH}}` commit the spec was written against. A later refresh diffs from there.
+- A mermaid dependency graph.
+- A `## Waves` table with the columns Wave, Goal and Tasks.
+- A `## Tasks` list with exactly one line per task file, in this form:
+
+  `- [ ] [task-03](tasks/task-03-lint-and-tests.md): Lint and the test harness (any model)`
+
+  - The box is ticked once the task is complete.
+  - The tag says who can build it. `(any model)` means a mid-tier coding model can finish it from the task file alone. `(strong model)` means it needs judgment the file can't fully pin down: security, concurrency, or a framework no model knows from training.
+  - A strong-model task still lists the tests it must pass, so a cheaper model can attempt it under review.
+
+Each task file has these sections, in order:
+- `## Status` (pending / complete)
+- `## Wave`
+- `## Description`
+- `## Dependencies`
+- `## Files to Modify`
+- `## Files to Create`
+- `## Technical Details`
+- `## Implementation Steps`
+- `## Verification` (literal commands with expected output)
+- `## Acceptance Criteria`
+- `## Notes`
+
+Rules that matter more than the format:
+- **Self-contained:** a fresh agent with no access to the conversation that produced the task can finish it from the file alone.
+- **No shared files within a wave:** two tasks in the same wave never share a file. Enforce this with the checker, not by trust.
+- **How a task names other tasks:**
+  - In a spec's prose, another spec's task is written without the hyphen: "spec 02's task 13", or "its task 13" once the spec is named. So `task-NN` alone means a task of the same spec.
+  - Under `## Dependencies`, `task-NN` names a task of the same spec, in an earlier wave, that this task needs, and the checker holds it to that. A task of the same spec that this one doesn't wait for is written there as "task 16".
+  - Everywhere else in a task, a task of the same spec keeps the hyphen ("task-04's file stays as written").
+- **File lists hold real paths only.** Commentary goes in Technical Details. Write a route as its source folder, not as a URL.
+- **Size:** one to three hours of agent work, and small enough to finish within a 200k-token context.
+- **Human-only work goes in `action-required.md`,** never in a task.
+- **Contradictions get surfaced:** if a task's brief contradicts the code, the spec writer says so instead of papering over it.
+- **Tests a behavior change retires** are named in the task's Notes, each with the change behind it. Any other test deletion fails the spec gate.
+- **Written ahead, checked before starting:**
+  - The strongest model writes specs, often well before they're built, so cheaper models can build them.
+  - Before a spec's first task, `node tools/spec-check/check.mjs --ready specs/NN-name` checks two things: every file its pending tasks change exists, or an earlier wave creates it; and nothing they create exists yet.
+  - If it fails, the code has drifted from the spec. Write `BLOCKED.md`, and the spec writer refreshes the spec.
+- **Proven, then lighter:** a spec's first waves give each task's code, built and tested in a scratch copy first. Once its patterns are set, later tasks pin down each file's job, exports, API calls, states and tests by name and count, and leave the code to the builder.
+
+## Gates
+
+**G0, before spec 01:**
+1. {{OWNER}} approves the product spec and this plan.
+2. The guardrails are on: the pre-tool hook enforcing the task file list and forbidden commands, and the stop hook refusing unverified work, for harnesses that support hooks. Harnesses without hooks rely on the checker plus review.
+3. The reviewer bot ({{REVIEWER_LOGIN}}) reviews pull requests into `{{DEFAULT_BRANCH}}`, and CI runs `npm run verify`.
+
+**Spec gate, to close a spec:**
+1. Every task is complete and `npm run verify` is green at HEAD.
+2. `node tools/spec-check/check.mjs` is clean.
+3. The changed files of each commit sit inside its task's lists.
+4. Test files show additions and zero deletions, except tests a task's Notes name as retired by a behavior change it makes on purpose. The reviewer checks that list against the diff.
+5. A review by **a different model family than the implementer** has no open critical or high findings.
+6. The reviewer bot has approved the pull request (AGENTS.md, Pull requests).
+7. The approved pull request is merged with `node tools/guardrails/merge-approved.mjs <number>`, then deployed with `node tools/guardrails/deploy-approved.mjs`.
+
+**Screen check, for a wave that builds or changes a screen** (only with `tools/screens`): before it merges, the lead captures each screen it touched, in both themes, and compares it with its frozen design. Differences go on the pull request and are fixed first.
+
+**Milestone gate**, after the last spec of a milestone: {{OWNER}} uses the build for at least 3 days, the quality bars it touches are measured and met, and there are no open P0 bugs.
+
+## Who executes what
+
+Model-agnostic. Assign by role, and swap models freely.
+
+| Role | Needs | Example models (non-binding) |
+|---|---|---|
+| Spec writer / architect (the lead) | Strongest reasoning; reads lots of code accurately | Opus, GPT, Gemini Pro |
+| Implementer (a builder) | Reliable coding against a precise task | Sonnet, Codex, GLM, Grok, Kimi, Gemini |
+| Reviewer | **A different family than the implementer**; read-only | any strong model not used to implement |
+| Mechanical tasks | Renames, copy changes, fixtures | Haiku, Flash, GLM Flash |
+
+Record the agent and model for every task in `specs/LEDGER.md`, so we learn which models do which work best.
+
+**Now:** the builders are `agentkit.config.json`'s `builders`. The lead runs each wave with `node tools/build/run-wave.mjs --spec specs/NN-name --wave N --builder <name>` ([tools/build/README.md](../tools/build/README.md)), then audits, merges and deploys it. A wave whose code the task gives goes to the cheaper builder; a wave where the builder writes the code goes to the stronger one, under a spend cap. The reviewer bot reviews every pull request; an adversarial review by another model family runs on every spec before it merges.
+
+## Open technical decisions
+
+Defaults apply unless the override column is filled. Decisions that get accepted become records in `docs/decisions/`.
+
+| # | Decision | Default | Override |
+|---|---|---|---|
+| T1 | Repo layout | (state the default) | |
+
+## Human-only setup by milestone
+
+Collected here so they can be done ahead of time; each spec's `action-required.md` has the exact steps.
+
+| When | What |
+|---|---|
+| Before 01 | Approve the product spec and this plan; install the reviewer bot on the repository |

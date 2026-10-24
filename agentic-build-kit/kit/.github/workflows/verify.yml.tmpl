@@ -1,0 +1,32 @@
+# Runs the same checks as `npm run verify` on every pull request and on {{DEFAULT_BRANCH}}. merge-approved.mjs waits for
+# this workflow's verify job (agentkit.config.json's ci.requiredJobs) once {{DEFAULT_BRANCH}} has this file. Actions are
+# pinned to commit SHAs; the comment names the release. Every push costs runner minutes, so superseded runs are cancelled.
+name: verify
+
+on:
+  pull_request:
+  push:
+    branches: [{{DEFAULT_BRANCH}}]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: verify-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 24
+          # npm's cache needs a lockfile; a repository without one yet installs nothing.
+          cache: ${{ hashFiles('package-lock.json') != '' && 'npm' || '' }}
+      - run: if [ -f package-lock.json ]; then npm ci; fi
+      - run: npm run verify
+      # Add the project's own build and smoke steps here, as further steps or jobs. A new job that must pass before a
+      # merge goes into agentkit.config.json's ci.requiredJobs too.
