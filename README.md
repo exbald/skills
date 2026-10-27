@@ -1,6 +1,6 @@
 # skills
 
-A collection of **51 Claude Code skills** covering marketing, copywriting, SEO, engineering patterns, Claude Code tooling, and decision-making workflows. Each skill is a self-contained `SKILL.md` (plus optional references and scripts) that extends Claude with specialized knowledge or process. Drop them into `~/.claude/skills/` and Claude will activate the right one automatically based on your request.
+A collection of **52 Claude Code skills** covering marketing, copywriting, SEO, engineering patterns, Claude Code tooling, and decision-making workflows. Each skill is a self-contained `SKILL.md` (plus optional references and scripts) that extends Claude with specialized knowledge or process. Drop them into `~/.claude/skills/` and Claude will activate the right one automatically based on your request.
 
 ## Install
 
@@ -46,6 +46,7 @@ Most skills auto-activate from your request. `concise` is the exception — it s
 - **email-reply** — draft replies to pasted emails in your own voice — concise, plain-English, lightly mirroring the sender. Learns your style from real sent emails on first run.
 - **email-sequence** — drip campaigns, onboarding emails, lifecycle automations, re-engagement.
 - **social-content** — LinkedIn posts, X threads, Instagram, TikTok — content creation and repurposing.
+- **ultimate-sales-letter** — Dan Kennedy's step system for direct-response copy: sales letters, long landing pages, pricing pages, launch posts, sales emails.
 
 ### Strategy & Growth
 - **free-tool-strategy** — engineering-as-marketing — design free tools for lead gen, SEO, and brand.
